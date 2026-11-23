@@ -43,6 +43,14 @@ def 跑贯验() -> dict:
         if 开腿刷 != 开腿数:
             问题.append(f"已开腿刷卡{开腿刷} ≠ 在途开腿{开腿数}")
 
+        # 批失败闭互证：整批回滚口径下，失败批在四本账上必须一条不剩。
+        from app.modules import 半截装载回滚 as 失败闭
+
+        for 闭 in conn.execute("SELECT * FROM 批失败闭"):
+            if 失败闭.校valid(conn, 闭["批次编号"], 闭["保留行程数"]):
+                continue
+            问题.append(f"批失败闭{闭['批次编号']}残留未回滚数据(保留行程数={闭['保留行程数']})")
+
         通过 = 1 if not 问题 else 0
         说明 = "行程账与刷卡点互证通过" if 通过 else "；".join(问题)[:800]
         conn.execute(

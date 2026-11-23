@@ -43,7 +43,7 @@ body {
 .主 { padding: 1.35rem 1.5rem 2.2rem; max-width: 1180px; width: 100%; margin: 0 auto }
 .题 { font-size: 1.28rem; margin: 0 0 0.3rem }
 .述 { color: var(--淡); margin: 0 0 1.1rem; font-size: 0.9rem; line-height: 1.55; max-width: 52rem }
-.阶条 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.45rem; margin-bottom: 1.2rem }
+.阶条 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.45rem; margin-bottom: 1.2rem }
 .阶 {
   background: var(--块); border: 1px solid var(--线); border-radius: 8px;
   padding: 0.65rem 0.7rem; box-shadow: 0 1px 0 rgba(28,43,36,0.04);

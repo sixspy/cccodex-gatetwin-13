@@ -21,10 +21,12 @@ export default function 闸台() {
         <div className="阶"><div className="序">③ 行程</div><b>{数.行程数 ?? 0}</b><span>已成对</span></div>
         <div className="阶"><div className="序">④ 旁路</div><b>{数.旁路匣 ?? 0}</b><span>旁路匣</span></div>
         <div className="阶"><div className="序">⑤ 成对刷卡</div><b>{数.已成对 ?? 0}</b><span>命运=已成对</span></div>
+        <div className="阶"><div className="序">⑥ 批失败闭</div><b>{数.批失败闭 ?? 0}</b><span>整批回滚</span></div>
       </div>
       <div className="提示条">
         冒烟：<Link to="/刷卡流">刷卡流</Link> 依次推成对 / 缺腿超时 / 出站孤儿 → 看开腿账与行程账 →{" "}
-        <Link to="/行程贯验">行程贯验</Link>。
+        <Link to="/行程贯验">行程贯验</Link>。批中途撞未知站：按<strong>整批回滚</strong>收口，见{" "}
+        <Link to="/批失败闭">批失败闭</Link>。
       </div>
       <div className="行"><button className="次" onClick={刷}>刷新台面</button></div>
       {末 ? (

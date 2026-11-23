@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.db import 夹具目录, 连接
+from app.modules import 半截装载回滚
 from app.services import 装载, 贯验, 目录
 
 路由 = APIRouter(prefix="/api")
@@ -130,6 +131,30 @@ def 装夹具(名: str = "成对样例"):
     if not 路径.exists():
         raise HTTPException(404, f"夹具不存在:{名}")
     return 装载.装一批(json.loads(路径.read_text(encoding="utf-8")))
+
+
+@路由.get("/批失败闭")
+def 列批失败闭():
+    """只读列出所有批失败闭（整批回滚口径）。"""
+    return 半截装载回滚.列闭()
+
+
+@路由.get("/批失败闭/{batch_id}")
+def 取批失败闭(batch_id: str):
+    """只读：按批次编号取失败闭（批次编号、肇事卡、保留行程数、回滚范围标记、valid）。
+
+    路径参数名用 ASCII：Starlette 的路由参数名只认 ASCII 标识符，中文名不会被编译成
+    捕获组（会整条失配 404）。批次编号本身仍可含中文。
+    """
+    d = 半截装载回滚.取闭(batch_id)
+    if d is None:
+        raise HTTPException(404, f"批失败闭不存在:{batch_id}")
+    return d
+
+
+@路由.get("/装载口径")
+def 装载口径():
+    return 半截装载回滚.架构信息()
 
 
 @路由.post("/贯验")

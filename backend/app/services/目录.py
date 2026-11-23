@@ -20,6 +20,7 @@ def 总览() -> dict:
             "行程数": c("SELECT COUNT(*) FROM 行程账 WHERE 状态='已成对'"),
             "旁路匣": c("SELECT COUNT(*) FROM 旁路匣"),
             "装载批次": c("SELECT COUNT(*) FROM 装载批次"),
+            "批失败闭": c("SELECT COUNT(*) FROM 批失败闭"),
             "末次贯验": dict(末) if 末 else None,
         }
     finally:

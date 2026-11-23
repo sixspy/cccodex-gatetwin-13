@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS 开腿账 (
   进站站点键 TEXT NOT NULL,
   进站事件时 TEXT NOT NULL,
   状态 TEXT NOT NULL DEFAULT '在途',
-  更新处理时 TEXT NOT NULL
+  更新处理时 TEXT NOT NULL,
+  批次编号 TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS 行程账 (
   行程键 TEXT PRIMARY KEY,
@@ -54,7 +55,8 @@ CREATE TABLE IF NOT EXISTS 行程账 (
   历时秒 INTEGER NOT NULL DEFAULT 0,
   状态 TEXT NOT NULL DEFAULT '已成对',
   版本 INTEGER NOT NULL DEFAULT 1,
-  处理时 TEXT NOT NULL
+  处理时 TEXT NOT NULL,
+  批次编号 TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS 旁路匣 (
   编号 INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +64,19 @@ CREATE TABLE IF NOT EXISTS 旁路匣 (
   卡号 TEXT NOT NULL DEFAULT '',
   事件编号 TEXT NOT NULL DEFAULT '',
   载荷 TEXT NOT NULL,
-  时刻 TEXT NOT NULL
+  时刻 TEXT NOT NULL,
+  批次编号 TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS 批失败闭 (
+  批次编号 TEXT PRIMARY KEY,
+  时刻 TEXT NOT NULL,
+  肇事卡 TEXT NOT NULL DEFAULT '',
+  肇事事件编号 TEXT NOT NULL DEFAULT '',
+  保留行程数 INTEGER NOT NULL DEFAULT 0,
+  回滚范围 TEXT NOT NULL DEFAULT '整批',
+  架构 TEXT NOT NULL DEFAULT '整批回滚',
+  valid INTEGER NOT NULL DEFAULT 1,
+  报告 TEXT NOT NULL DEFAULT '{}'
 );
 CREATE TABLE IF NOT EXISTS 行程贯验 (
   编号 INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,9 +95,20 @@ def 此刻() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _补列(conn) -> None:
+    """老库迁移：给三本账补批次编号归属列，供整批回滚验残留。"""
+    for 表 in ("开腿账", "行程账", "旁路匣"):
+        列 = {r["name"] for r in conn.execute(f"PRAGMA table_info({表})")}
+        if "批次编号" not in 列:
+            conn.execute(
+                f"ALTER TABLE {表} ADD COLUMN 批次编号 TEXT NOT NULL DEFAULT ''"
+            )
+
+
 def 初始化库() -> None:
     conn = 连接()
     conn.executescript(建表)
+    _补列(conn)
     if conn.execute("SELECT COUNT(*) AS c FROM 站规").fetchone()["c"] == 0:
         for k, v in {
             "站名": "闸对",
@@ -91,6 +116,7 @@ def 初始化库() -> None:
             "同站进出": "允许",
             "重复进站策略": "旧腿旁路并开新腿",
             "配对策略": "同卡先进后出",
+            "装载失败口径": "整批回滚（任一条失败则本批全卡回滚，批报告失败）",
             "骨架": "刷卡点装载→同卡进站出站成对物化→缺腿异向超时旁路→行程账与刷卡点互证",
         }.items():
             conn.execute("INSERT INTO 站规(键, 值) VALUES (?, ?)", (k, v))

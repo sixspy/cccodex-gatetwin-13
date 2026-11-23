@@ -7,7 +7,7 @@ export default function 线路站() {
   return (
     <div>
       <h1 className="题">线路站</h1>
-      <p className="述">种子线路与站点。未知站点刷卡会进旁路。</p>
+      <p className="述">种子线路与站点。未知站点刷卡是装载批致命事件：按整批回滚，批报告失败。</p>
       {!行.length ? <div className="空态">无线路。</div> : 行.map((ln) => (
         <div className="段" key={ln.线路键}>
           <div className="段题">{ln.线路键} · {ln.名称}</div>
